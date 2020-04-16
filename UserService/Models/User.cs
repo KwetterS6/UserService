@@ -14,5 +14,6 @@ namespace UserService.Models
 
         public byte[] Salt { get; set; }
 
+        public string Token { get; set; }
     }
 }

@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.Globalization;
+using System.Security.Claims;
 using System.Security.Policy;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using UserService.Helpers;
 using UserService.Models;
 using UserService.Repositories;
@@ -14,11 +19,14 @@ namespace UserService.Services
     {
         private readonly IUserRepository _repository;
         private readonly IHasher _hasher;
+        private readonly IJWTTokenGenerator _tokenGenerator;
+        
 
-        public UserService(IUserRepository repository, IHasher hasher)
+        public UserService(IUserRepository repository, IHasher hasher, IOptions<AppSettings> appSettings, IJWTTokenGenerator tokenGenerator)
         {
             _repository = repository;
             _hasher = hasher;
+            _tokenGenerator = tokenGenerator;
         }
 
         public async Task Fill()
@@ -67,6 +75,25 @@ namespace UserService.Services
             };
 
             return await _repository.Create(user);
+        }
+
+
+
+
+
+
+
+        public async Task<User> Login(string email, string password)
+        {
+            var user = await _repository.Get(email);
+            if (user == null) throw new ArgumentException("A user with this email address does not exist.");
+
+            if (!await _hasher.VerifyHash(password, user.Salt, user.Password))
+            {
+                throw new ArgumentException("the password is incorrect.");
+            }
+
+            return _tokenGenerator.Authenticate(user);
         }
     }
 }
