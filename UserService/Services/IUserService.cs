@@ -15,5 +15,7 @@ namespace UserService.Services
 
 
         Task<User> Insert(string viewName, string viewEmail, string viewPassword);
+
+        Task<User> Login(string viewEmail, string viewPassword);
     }
 }

@@ -14,8 +14,8 @@ namespace UserService.Helpers
             {
                 Salt = salt,
                 DegreeOfParallelism = 2,
-                Iterations = 4,
-                MemorySize = 1024 * 1024
+                Iterations = 2,
+                MemorySize = 1024
             };
 
             return argon2.GetBytesAsync(16);
