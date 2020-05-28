@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kwetservice
+  name: userservice
   namespace: kwetter-development
   labels:
-    app: kwetservice
+    app: userservice
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kwetservice
+      app: userservice
   template:
     metadata:
       labels:
-        app: kwetservice
+        app: userservice
     spec:
       containers:
-      - image: docker.pkg.github.com/kwetters6/kwetservice/kwetservice
+      - image: docker.pkg.github.com/kwetters6/userservice/userservice
         imagePullPolicy: IfNotPresent
-        name: kwetservice
+        name: userservice
         ports: 
         - containerPort: 80
         resources:
