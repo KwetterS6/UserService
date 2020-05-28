@@ -1,8 +1,8 @@
 name: .NET Core on push on develop
 
-on: [push]
-  #push:
-    #branches: [dev]
+on:
+  push:
+    branches: [dev]
 
 jobs:
   build:
@@ -18,18 +18,25 @@ jobs:
       - name: Test
         run: dotnet test
       - name: Publish
-        run: dotnet publish -c Release -o out
+        run: dotnet publish -c Release -o release
+        
       - name: Upload release artifact
         uses: actions/upload-artifact@v1
         with:
           name: release-artifact
-          path: ./out
+          path: ./release
       - name: Upload Dockerfile artifact
         uses: actions/upload-artifact@v1
         with:
           name: dockerfile-artifact
           path: ./Dockerfile
-  delivery:
+      - name: Upload kubernetes artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: kubernetes-artifact
+          path: ./kube_develop
+
+  deliver:
     needs: build
     runs-on: ubuntu-18.04
     steps:
@@ -37,7 +44,7 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: release-artifact
-          path: .
+          path: ./release
       - name: Download Dockerfile artifact
         uses: actions/download-artifact@v1
         with:
@@ -45,10 +52,51 @@ jobs:
           path: .
       - name: Deliver Docker image
         env:
-          CONTAINER_IMAGE: ${{ secrets.DOCKER_ORGANIZATION }}/${{ secrets.REPOSITORY_NAME }}:${{ github.sha }}
-          CONTAINER_IMAGE_LATEST: ${{ secrets.DOCKER_ORGANIZATION }}/${{ secrets.REPOSITORY_NAME }}:dev
+          CONTAINER_IMAGE: docker.pkg.github.com/kwetters6/userservice/userservice:${{ github.sha }}
         run: |
-          docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
-          docker build -t $CONTAINER_IMAGE -t $CONTAINER_IMAGE_LATEST .
+          echo "${{ secrets.GITHUB_TOKEN }}"| docker login docker.pkg.github.com -u ${{ secrets.DOCKER_USER }} --password-stdin
+          docker build -t $CONTAINER_IMAGE .
           docker push $CONTAINER_IMAGE
-          docker push $CONTAINER_IMAGE_LATEST
+  deploy:
+    needs: deliver
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Download kubernetes artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: kubernetes-artifact
+          path: ./kube_development
+
+      - uses: Azure/setup-kubectl@v1
+
+      - uses: Azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - uses: Azure/k8s-create-secret@v1
+        with:
+          namespace: kwetter-development
+          container-registry-url: docker.pkg.github.com
+          container-registry-username: ${{ secrets.DOCKER_USER }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          secret-name: github-docker-registry
+
+      - uses: Azure/k8s-deploy@v1
+        with:
+          namespace: kwetter-development
+          manifests: |
+            ./kube_development/kube_deployment.yaml
+            ./kube_development/kube_service.yaml
+          images: |
+            docker.pkg.github.com/kwetters6/userservice/userservice:${{ github.sha }}
+          imagepullsecrets:
+            github-docker-registry
+        #env:
+          #CONTAINER_IMAGE: ${{ secrets.DOCKER_ORGANIZATION }}/${{ secrets.REPOSITORY_NAME }}:${{ github.sha }}
+          #CONTAINER_IMAGE_LATEST: ${{ secrets.DOCKER_ORGANIZATION }}/${{ secrets.REPOSITORY_NAME }}:dev
+        #run: |
+          #docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_ACCESS_TOKEN }}
+          #docker build -t $CONTAINER_IMAGE -t $CONTAINER_IMAGE_LATEST .
+          #docker push $CONTAINER_IMAGE
+          #docker push $CONTAINER_IMAGE_LATEST
