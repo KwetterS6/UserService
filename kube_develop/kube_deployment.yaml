@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kwetservice
+  namespace: kwetter-development
+  labels:
+    app: kwetservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kwetservice
+  template:
+    metadata:
+      labels:
+        app: kwetservice
+    spec:
+      containers:
+      - image: docker.pkg.github.com/kwetters6/kwetservice/kwetservice
+        imagePullPolicy: IfNotPresent
+        name: kwetservice
+        ports: 
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+      imagePullSecrets:
+      - name: github-docker-registry
