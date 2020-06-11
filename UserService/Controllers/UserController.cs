@@ -7,6 +7,7 @@ using UserService.views;
 
 namespace UserService.Controllers
 {
+    [ApiController]
     [Route( "[controller]")]
     public class UserController : ControllerBase
     {
