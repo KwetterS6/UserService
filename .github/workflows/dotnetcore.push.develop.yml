@@ -65,7 +65,7 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: kubernetes-artifact
-          path: ./kube_development
+          path: ./kube_develop
 
       - uses: Azure/setup-kubectl@v1
 
@@ -86,9 +86,9 @@ jobs:
         with:
           namespace: kwetter-development
           manifests: |
-            ./kube_development/kube_deployment.yaml
-            ./kube_development/kube_service.yaml
-            ./kube_development/kube_ingress.yaml
+            ./kube_develop/kube_deployment.yaml
+            ./kube_develop/kube_service.yaml
+            ./kube_develop/kube_ingress.yaml
           images: |
             docker.pkg.github.com/kwetters6/userservice/userservice:${{ github.sha }}
           imagepullsecrets:
