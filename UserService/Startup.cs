@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MessageBroker;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -30,6 +31,8 @@ namespace UserService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var messageQueueSection = Configuration.GetSection(nameof(MessageQueueSettings));
+            services.Configure<MessageQueueSettings>(Configuration.GetSection(nameof(MessageQueueSettings)));
 
             services.AddCors();
             
@@ -48,6 +51,8 @@ namespace UserService
             services.AddTransient<IUserRepository, UserRepository>();
             
             services.AddTransient<IJWTTokenGenerator, JWTTokenGenerator>();
+
+            services.AddMessagePublisher(messageQueueSection.Get<MessageQueueSettings>().Uri);
 
             services.AddSingleton<IUserstoreDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<UserstoreDatabaseSettings>>().Value);
