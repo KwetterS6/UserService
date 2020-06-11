@@ -88,6 +88,7 @@ jobs:
           manifests: |
             ./kube_development/kube_deployment.yaml
             ./kube_development/kube_service.yaml
+            /.kube_development/kube_ingress.yaml
           images: |
             docker.pkg.github.com/kwetters6/userservice/userservice:${{ github.sha }}
           imagepullsecrets:
