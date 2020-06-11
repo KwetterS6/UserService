@@ -12,7 +12,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - host: userservice.development.kwetter.nl
+  - host: userservice.woutervandenboorn.software
     http:
       paths:
       - backend:
@@ -20,7 +20,7 @@ spec:
           servicePort: 80
   tls:
   - hosts:
-    - userservice.development.kwetter.nl
+    - userservice.woutervandenboorn.software
     secretName: 
 status:
   loadBalancer:
