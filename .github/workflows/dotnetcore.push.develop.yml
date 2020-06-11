@@ -89,6 +89,7 @@ jobs:
             ./kube_develop/kube_deployment.yaml
             ./kube_develop/kube_service.yaml
             ./kube_develop/kube_ingress.yaml
+            ./kube_develop/kube_certificate.yaml
           images: |
             docker.pkg.github.com/kwetters6/userservice/userservice:${{ github.sha }}
           imagepullsecrets:

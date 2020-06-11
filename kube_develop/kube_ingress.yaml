@@ -19,9 +19,9 @@ spec:
           serviceName: userservice
           servicePort: 80
   tls:
-  - hosts:
-    - userservice.woutervandenboorn.software
-    secretName: 
+    - secretName: user-service-tls
+      hosts: 
+        - userservice.woutervandenboorn.software
 status:
   loadBalancer:
     ingress:
