@@ -86,7 +86,7 @@ jobs:
         with:
           namespace: kwetter-development
           manifests: |
-            ./kube_developt/kube_deployment.yaml
+            ./kube_develop/kube_deployment.yaml
             ./kube_develop/kube_service.yaml
             ./kube_develop/kube_ingress.yaml
           images: |
