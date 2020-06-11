@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using MessageBroker;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using UserService.Helpers;
@@ -20,13 +21,17 @@ namespace UserService.Services
         private readonly IUserRepository _repository;
         private readonly IHasher _hasher;
         private readonly IJWTTokenGenerator _tokenGenerator;
+        private readonly IMessageQueuePublisher _messageQueuePublisher;
+        private readonly MessageQueueSettings _messageQueueSettings;
         
 
-        public UserService(IUserRepository repository, IHasher hasher, IOptions<AppSettings> appSettings, IJWTTokenGenerator tokenGenerator)
+        public UserService(IUserRepository repository, IHasher hasher, IOptions<AppSettings> appSettings, IJWTTokenGenerator tokenGenerator, IMessageQueuePublisher messageQueuePublisher, IOptions<MessageQueueSettings> messageQueueSettings)
         {
             _repository = repository;
             _hasher = hasher;
             _tokenGenerator = tokenGenerator;
+            _messageQueuePublisher = messageQueuePublisher;
+            _messageQueueSettings = messageQueueSettings.Value;
         }
 
         public async Task Fill()
@@ -74,6 +79,8 @@ namespace UserService.Services
                 Password = password
             };
 
+            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "EmailService", "RegisterUser", viewEmail);
+            
             return await _repository.Create(user);
         }
 

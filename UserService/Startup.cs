@@ -37,6 +37,9 @@ namespace UserService
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
             
+            services.Configure<UserstoreDatabaseSettings>(
+                Configuration.GetSection(nameof(UserstoreDatabaseSettings)));
+                
             services.AddTransient<IHasher, Hasher>();
 
             services.AddTransient<IUserService, Services.UserService>();
@@ -44,10 +47,7 @@ namespace UserService
             services.AddTransient<IUserRepository, UserRepository>();
             
             services.AddTransient<IJWTTokenGenerator, JWTTokenGenerator>();
-            
-            services.Configure<UserstoreDatabaseSettings>(
-                Configuration.GetSection(nameof(UserstoreDatabaseSettings)));
-            
+
             services.AddSingleton<IUserstoreDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<UserstoreDatabaseSettings>>().Value);
                 

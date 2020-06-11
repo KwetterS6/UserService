@@ -21,7 +21,7 @@ namespace UserService.Repositories
         public async Task<User> Get(string email) => 
             await _users.Find(user => user.Email == email).FirstOrDefaultAsync();
         public async Task<User> Get(Guid id) =>
-            await _users.Find<User>(book => book.Id == id).FirstOrDefaultAsync();
+            await _users.Find<User>(user => user.Id == id).FirstOrDefaultAsync();
         public async Task<User> Create(User user)
         {
             await _users.InsertOneAsync(user);

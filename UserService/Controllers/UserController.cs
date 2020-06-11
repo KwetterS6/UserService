@@ -40,6 +40,7 @@ namespace UserService.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginView view)
         {
+            Console.Out.WriteLine("login");
             try
             {
                 var user = await _service.Login(view.Email, view.Password);
