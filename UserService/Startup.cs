@@ -65,14 +65,12 @@ namespace UserService
 
             //app.UseHttpsRedirection();
 
-            app.UseRouting();
-            
             app.UseCors(x => x
                 .AllowAnyOrigin()
                 .AllowAnyHeader()
                 .AllowAnyMethod()
             );
-
+            app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
 
