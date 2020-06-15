@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using UserService.Helpers;
 using UserService.Models;
 using UserService.Repositories;
+using UserService.views;
 
 namespace UserService.Services
 {
@@ -79,7 +80,12 @@ namespace UserService.Services
                 Password = password
             };
 
-            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "EmailService", "RegisterUser", viewEmail);
+            var messageQSendable = new RegisterMessageView()
+            {
+                Email = viewEmail
+            };
+
+            await _messageQueuePublisher.PublishMessageAsync(_messageQueueSettings.Exchange, "EmailService", "RegisterUser", messageQSendable);
             
             return await _repository.Create(user);
         }
