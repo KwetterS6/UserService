@@ -35,7 +35,7 @@ jobs:
         with:
           name: kubernetes-artifact
           path: ./kube_develop
-          
+
   sonarscanner:
     runs-on: ubuntu-18.04
     steps:
@@ -54,7 +54,7 @@ jobs:
               /d:sonar.cs.opencover.reportsPaths='"/${{ env.PROJECT_NAME }}tests/coverage.xml"'
               /d:sonar.coverage.exclusions='"**/*.cs","**/*.md","**/sonar-project.properties"'
         env:
-          SONAR_TOKEN: ${{ secrets.SONARCLOUD_ACCESS_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
