@@ -1,0 +1,81 @@
+name: .NET Core on push on develop
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    container:
+      image: mcr.microsoft.com/dotnet/core/sdk:3.1.201-bionic
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build
+      - name: Test
+        run: dotnet test
+      - name: Publish
+        run: dotnet publish -c Release -o release
+        
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: release-artifact
+          path: ./release
+      - name: Upload Dockerfile artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: dockerfile-artifact
+          path: ./Dockerfile
+      - name: Upload kubernetes artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: kubernetes-artifact
+          path: ./kube_develop
+
+  sonarscanner:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Sonarscanner for dotnet
+        uses: Secbyte/dotnet-sonarscanner@v2.3
+        with:
+          buildCommand: dotnet build .
+          testCommand: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+          projectKey: KwetterS6_UserService
+          projectName: UserService
+          sonarOrganisation: kwetter-s6
+          beginArguments: >
+              /d:sonar.verbose="true"
+              /d:sonar.cs.opencover.reportsPaths='"/${{ env.PROJECT_NAME }}tests/coverage.xml"'
+              /d:sonar.coverage.exclusions='"**/*.cs","**/*.md","**/sonar-project.properties"'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+  deliver:
+    needs: build
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Download release artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: release-artifact
+          path: ./release
+      - name: Download Dockerfile artifact
+        uses: actions/download-artifact@v1
+        with:
+          name: dockerfile-artifact
+          path: .
+      - name: Deliver Docker image
+        env:
+          CONTAINER_IMAGE: docker.pkg.github.com/kwetters6/userservice/userservice:${{ github.sha }}
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}"| docker login docker.pkg.github.com -u ${{ secrets.DOCKER_USER }} --password-stdin
+          docker build -t $CONTAINER_IMAGE .
+          docker push $CONTAINER_IMAGE
