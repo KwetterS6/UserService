@@ -12,6 +12,7 @@ namespace UserService.Helpers
 
         public static User WithoutPassword(this User user) {
             user.Password = null;
+            user.Salt = null;
             return user;
         }
     }
